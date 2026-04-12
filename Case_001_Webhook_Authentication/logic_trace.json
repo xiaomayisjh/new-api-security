@@ -1,0 +1,46 @@
+{
+  "case_id": "001",
+  "logic_type": "Webhook_Authentication",
+  "description": "Missing webhook signature verification",
+  "call_chain": [
+    {
+      "file": "router/api-router.go",
+      "function": "SetApiRouter",
+      "line": "49",
+      "endpoint": "/api/stripe/webhook",
+      "method": "POST"
+    },
+    {
+      "file": "controller/user.go",
+      "function": "StripeWebhook",
+      "line": "unknown",
+      "description": "Handles Stripe webhook events"
+    },
+    {
+      "file": "service/billing.go",
+      "function": "HandleStripeWebhook",
+      "line": "unknown",
+      "description": "Processes Stripe webhook data"
+    }
+  ],
+  "sinks": [
+    {
+      "file": "service/billing.go",
+      "function": "HandleStripeWebhook",
+      "line": "unknown",
+      "type": "Webhook_Processing"
+    }
+  ],
+  "external_inputs": [
+    {
+      "source": "HTTP Request Body",
+      "parameter": "event",
+      "location": "router/api-router.go:49"
+    },
+    {
+      "source": "HTTP Request Headers",
+      "parameter": "Stripe-Signature",
+      "location": "router/api-router.go:49"
+    }
+  ]
+}
