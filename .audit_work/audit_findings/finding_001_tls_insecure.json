@@ -1,0 +1,8 @@
+{
+  "f{
+  "finding_id": "FINDING-001",
+  "severity": "H{
+  "finding_id": "FINDING-001",
+  "severity": "HIGH",
+  "logic_type": "Insecure_TLS_Configuration",
+  "file
