@@ -1,0 +1,29 @@
+{
+  "vulnerability": "CORS配置过于宽松",
+  "severity": "high",
+  "affected_files": [
+    {
+      "file": "middleware/cors.go",
+      "functions": ["CORS"],
+      "line_range": ["9", "16"]
+    }
+  ],
+  "data_flow": [
+    {
+      "file": "middleware/cors.go",
+      "function": "CORS",
+      "action": "设置CORS配置，同时允许所有源和凭证"
+    },
+    {
+      "file": "router/relay-router.go",
+      "function": "SetRelayRouter",
+      "action": "应用CORS中间件到所有中继路由"
+    },
+    {
+      "file": "router/api-router.go",
+      "function": "SetApiRouter",
+      "action": "应用CORS中间件到API路由"
+    }
+  ],
+  "impact": "可能导致跨站请求伪造（CSRF）攻击，攻击者可通过恶意网站诱导用户执行未授权操作"
+}
