@@ -21,6 +21,7 @@ class NewAPIClient:
         })
         self.user_info = None
         self.access_token = None
+        self.user_id = None
 
     def _make_request(self, method: str, endpoint: str, **kwargs) -> Tuple[bool, Any]:
         """
@@ -92,6 +93,11 @@ class NewAPIClient:
         status_code, data = self._make_request("POST", "/api/user/login", json=payload)
         if data.get("success", False):
             self.user_info = data.get("data")
+            self.user_id = self.user_info.get("id")
+            # 更新请求头，添加 New-Api-User
+            self.session.headers.update({
+                "New-Api-User": str(self.user_id)
+            })
         return data.get("success", False), data
 
     def logout(self) -> Tuple[bool, Dict]:
@@ -103,6 +109,10 @@ class NewAPIClient:
         if data.get("success", False):
             self.user_info = None
             self.access_token = None
+            self.user_id = None
+            # 移除请求头中的 New-Api-User
+            if "New-Api-User" in self.session.headers:
+                del self.session.headers["New-Api-User"]
         return data.get("success", False), data
 
     def get_self(self) -> Tuple[bool, Dict]:
