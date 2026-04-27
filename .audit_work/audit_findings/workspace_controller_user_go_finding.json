@@ -1,0 +1,20 @@
+
+{
+  "source_file": "/workspace/controller/user.go",
+  "findings": [
+    {
+      "finding_type": "Potential_Information_Exposure",
+      "taint_path": "User-provided binding_type from URL parameter is directly interpolated into log message without validation",
+      "potential_interaction": "HTTP request to /admin/user/:id/binding/:binding_type with malicious binding_type could inject unexpected content into logs",
+      "requires_cross_file_check": true,
+      "line_numbers": [589, 612]
+    },
+    {
+      "finding_type": "Improper_Input_Handling",
+      "taint_path": "GetUserModels function falls back to c.GetInt(\"id\") without proper validation when c.Param(\"id\") fails to parse",
+      "potential_interaction": "Unexpected user ID could be used in model operations if URL parameter is invalid",
+      "requires_cross_file_check": false,
+      "line_numbers": [513, 515]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "source_file": "/workspace/controller/channel.go",
+  "findings": [
+    {
+      "finding_type": "SSRF",
+      "taint_path": "FetchModels function accepts base_url from JSON request body, which is then used directly in http.NewRequest without SSRF validation",
+      "potential_interaction": "Attacker can send a request with base_url set to an internal service URL (e.g., http://127.0.0.1:8080) to access internal resources",
+      "requires_cross_file_check": false,
+      "line_numbers": [973, 988, 1037, 1039, 1050]
+    }
+  ]
+}

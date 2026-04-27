@@ -1,0 +1,12 @@
+{
+  "source_file": "/workspace/controller/relay.go",
+  "findings": [
+    {
+      "finding_type": "Insecure_WebSocket_Origin_Check",
+      "taint_path": "The websocket.Upgrader at line 244-249 has CheckOrigin set to return true, allowing any origin to connect to WebSocket endpoints.",
+      "potential_interaction": "Malicious website could establish WebSocket connection to the server if the user is authenticated.",
+      "requires_cross_file_check": false,
+      "line_numbers": [246, 247, 248]
+    }
+  ]
+}
