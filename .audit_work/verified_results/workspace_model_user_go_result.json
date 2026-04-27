@@ -1,0 +1,7 @@
+{
+  "original_finding": "/workspace/.audit_work/audit_findings/workspace_model_user_go_finding.json",
+  "status": "Failed",
+  "verified_poc_path": "/workspace/.audit_work/poc_scripts/verify_group_col.py",
+  "observation": "1. commonGroupCol 是在 model/main.go L28-60 的 initCol() 函数中初始化的\n2. 它的值是根据数据库类型设置为 \"`group`\" 或 '\"group\"'\n3. 这是一个内部变量，不接受任何外部输入\n4. 因此，不存在列注入风险，这是误报",
+  "fix_recommendation": "无需修复，此发现是误报"
+}

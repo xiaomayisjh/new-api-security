@@ -1,0 +1,12 @@
+{
+  "source_file": "/workspace/middleware/auth.go",
+  "findings": [
+    {
+      "finding_type": "Potential_Access_Control",
+      "taint_path": "Authorization header (or other token sources) → Split by '-' to get parts[0] (token key) and parts[1] (channel ID) → c.Set(\"specific_channel_id\", parts[1])",
+      "potential_interaction": "A token like 'sk-<token>-<channel-id>' could set a specific_channel_id if the user is admin, which might be used elsewhere without validation",
+      "requires_cross_file_check": true,
+      "line_numbers": [392, 393, 394]
+    }
+  ]
+}

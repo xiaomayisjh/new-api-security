@@ -1,0 +1,12 @@
+{
+  "source_file": "/workspace/model/user.go",
+  "findings": [
+    {
+      "finding_type": "Potential_Column_Injection",
+      "taint_path": "commonGroupCol variable is used in SQL queries without validation on lines 252-254 and 262-264, potentially allowing column injection if commonGroupCol is controllable by external input",
+      "potential_interaction": "If commonGroupCol is derived from user-controlled input, an attacker could modify this value to inject arbitrary column names into the SQL query",
+      "requires_cross_file_check": true,
+      "line_numbers": [252, 253, 254, 262, 263, 264]
+    }
+  ]
+}
