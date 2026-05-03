@@ -1,0 +1,34 @@
+{
+  "epay": {
+    "GET/api/user/epay/notify": {
+      "status": 502,
+      "response": "Forwarding error: connection closed before message completed",
+      "vulnerable": false
+    },
+    "POST/api/user/epay/notify": {
+      "status": 200,
+      "response": "fail",
+      "vulnerable": false
+    },
+    "GET/api/subscription/epay/notify": {
+      "status": 502,
+      "response": "Forwarding error: connection closed before message completed",
+      "vulnerable": false
+    },
+    "POST/api/subscription/epay/notify": {
+      "status": 502,
+      "response": "Forwarding error: connection closed before message completed",
+      "vulnerable": false
+    }
+  },
+  "stripe": {
+    "status": 404,
+    "response": "{\"error\":{\"message\":\"Invalid URL (GET /api/stripe/webhook)\",\"type\":\"invalid_request_error\",\"param\":\"",
+    "vulnerable": false
+  },
+  "creem": {
+    "status": 502,
+    "response": "Forwarding error: connection closed before message completed",
+    "vulnerable": false
+  }
+}
