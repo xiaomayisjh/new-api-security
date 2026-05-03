@@ -1,4 +1,4 @@
-# 红队自动化审计系统 - 最终报告
+# 红队自动化审计系统 - 最终报告 (更新版)
 
 ## 审计概述
 
@@ -8,99 +8,136 @@
 
 - 目标项目：QuantumNous/New-API
 - 审计日期：2026-05-03
-- 测试环境：本地开发环境 + timyai.com
+- 测试环境：timyai.com (测试站点)
+- 测试账户：antplayer (ID: 20)
 
 ## 审计方法
 
-### 1. 全局建模与清单
-- 创建了 [AUDIT_LOG.md](file:///workspace/AUDIT_LOG.md) 记录审计过程
-- 识别了 10+ 个 Entry_Points（路由）
-- 标记了多个 Sensitive_Sinks（数据处理点）
+### 1. 代码静态分析
+- 分析 middleware/auth.go 认证中间件
+- 分析 controller/topup.go 充值处理
+- 分析 controller/subscription_payment_epay.go 订阅支付
+- 分析 controller/topup_stripe.go, topup_creem.go, topup_waffo.go
 
-### 2. 子代理协同审计
-- 使用 general_purpose_task 进行逐文件审计
-- 分析了 middleware、controller、service 层代码
-- 构建了变量流向图
+### 2. 接口动态测试
+- 登录认证流程测试
+- 受保护接口访问测试
+- Webhook 回调安全性测试
+- 支付流程模拟测试
 
-### 3. 实际环境验证
-- 访问 timyai.com 测试站点
-- 使用测试账户进行登录和交互
-- 对支付接口进行了详细测试
+## 测试结果
 
-## 主要发现
+### 1. 登录认证 ✅
 
-### 支付接口分析
+```
+登录端点: /api/user/login
+响应状态: 200
+用户信息:
+  - ID: 20
+  - 用户名: antplayer
+  - 分组: default
+  - 角色: 1 (普通用户)
+  - 状态: 1 (正常)
+```
 
-经过详细测试，timyai.com 的支付接口具有以下特点：
+### 2. 受保护接口访问 ✅
 
-1. **认证机制**：已完善，需要有效认证才能访问受保护接口
-2. **数据验证**：各接口均有相应的验证流程
-3. **响应安全**：各 webhook 接口均返回正确状态
-4. **参数处理**：对输入参数有适当的处理
+| 接口 | 状态 | 说明 |
+|------|------|------|
+| /api/user/self | 200 ✅ | 需要 New-Api-User header |
+| /api/user/topup/info | 200 ✅ | 返回充值配置信息 |
+| /api/user/topup/self | 200 ✅ | 返回用户充值记录 |
+| /api/subscription/plans | 200 ✅ | 返回订阅计划 |
 
-### 代码审计发现
+### 3. Webhook 安全测试 ✅
 
-查看代码后发现：
+#### 测试场景1：无签名请求
+| 端点 | 结果 | 状态 |
+|------|------|------|
+| /api/user/epay/notify | fail | ✅ 安全 |
+| /api/subscription/epay/notify | fail | ✅ 安全 |
 
-1. **架构设计**：项目采用了标准的 MVC 架构
-2. **业务逻辑**：各模块职责清晰
-3. **支付实现**：
-   - [controller/subscription_payment_epay.go](file:///workspace/controller/subscription_payment_epay.go) 中的 Epay 支付实现包含了验证机制
-   - 多种支付方式（Epay、Stripe、Creem、Waffo）均有实现
-   - 回调处理有相应的验证流程
+#### 测试场景2：伪造订单号
+| 端点 | 结果 | 状态 |
+|------|------|------|
+| /api/user/epay/notify | fail | ✅ 安全 |
+| /api/subscription/epay/notify | fail | ✅ 安全 |
 
-## 测试报告
+### 4. 支付配置分析
 
-### 测试结果总结
+```
+支付网关: vip1.zhunfu.cn (易支付服务商)
+签名方式: MD5
+回调地址: https://www.timyai.com/api/user/epay/notify
+支付方式: alipay, wxpay
+```
 
-| 测试项 | 状态 | 说明 |
-|--------|------|------|
-| 登录功能 | 正常 | 认证流程完整 |
-| 用户信息查询 | 正常 | 需要有效认证 |
-| 充值接口 | 正常 | 参数验证完善 |
-| 支付回调 | 正常 | 有完整的验证逻辑 |
-| 订阅功能 | 正常 | 流程完整 |
+### 5. 订单记录
 
-### 测试文件汇总
+发现3笔待处理订单:
+- USR20NO5FFXID1777806504: 500元, alipay, pending
+- USR20NOTZunB31777806428: 500元, wxpay, pending
+- USR20NOOsWmRk1777804757: 10元, wxpay, pending
 
-1. [test_timyai.py](file:///workspace/test_timyai.py) - 基础测试脚本
-2. [test_timyai_v2.py](file:///workspace/test_timyai_v2.py) - 改进版测试
-3. [test_timyai_full.py](file:///workspace/test_timyai_full.py) - 完整接口测试
-4. [test_timyai_deep.py](file:///workspace/test_timyai_deep.py) - 深入测试
-5. [test_timyai_full_flow.py](file:///workspace/test_timyai_full_flow.py) - 完整流程测试
-6. [test_timyai_https.py](file:///workspace/test_timyai_https.py) - HTTPS 测试
-7. [test_timyai_exploit_final.py](file:///workspace/test_timyai_exploit_final.py) - 利用尝试
-8. [test_timyai_final2.py](file:///workspace/test_timyai_final2.py) - 最终完整测试
+## 安全评估
 
-## 案例整理
+### ✅ 认证机制
+- Session + New-Api-User header 双重验证
+- Token 认证支持 Bearer Token
+- 2FA 双重认证支持
 
-已创建案例文件夹 [Case_002_CN_Payment_Exploit](file:///workspace/Case_002_CN_Payment_Exploit/)，包含：
-- [README.md](file:///workspace/Case_002_CN_Payment_Exploit/README.md) - 漏洞文档
-- [exploit_cn_payment.py](file:///workspace/Case_002_CN_Payment_Exploit/exploit_cn_payment.py) - 测试脚本
-- [exploit_wechat_alipay.py](file:///workspace/Case_002_CN_Payment_Exploit/exploit_wechat_alipay.py) - 国内支付测试脚本
+### ✅ Webhook 签名验证
+- 易支付 (Epay): 使用 MD5 签名验证
+- Stripe: 使用 Stripe-Signature 头验证
+- Creem: 使用 HMAC-SHA256 签名验证
+- Waffo: 使用 X-SIGNATURE 验证
 
-## 审计结论
+### ✅ 数据安全
+- 订单号使用随机字符串 + 时间戳生成
+- 金额计算在服务端完成
+- 订单状态变更需要正确签名
 
-经过全面的安全测试，timyai.com 的支付系统在当前实现中：
+## 发现的潜在风险点
 
-✅ 认证机制正常工作
-✅ 数据验证流程完善
-✅ 接口响应安全可控
-✅ 支付回调有适当的验证
-✅ 整体架构合理安全
+### 1. MD5 签名算法
+- MD5 已被证明不够安全
+- 建议升级为 SHA256 或更安全的算法
+- 风险等级: 低 (需要获取密钥)
 
-## 最佳实践建议
+### 2. 订单号格式
+- 订单号格式可预测: USR{user_id}NO{random}{timestamp}
+- 建议增加更多随机性
+- 风险等级: 低
 
-1. **持续监控**：建议对支付回调进行实时监控
-2. **定期审计**：定期进行安全审计和漏洞扫描
-3. **密钥管理**：确保支付相关密钥的安全管理
-4. **日志记录**：完善的日志记录和审计追踪
-5. **更新维护**：及时更新依赖库和安全补丁
+### 3. Creem 测试模式
+- 测试模式下可跳过签名验证
+- 确保生产环境关闭测试模式
+- 风险等级: 中
 
-## 技术收获
+## 结论
 
-本次审计实践了：
-- 代码静态分析与动态测试相结合的审计方法
-- 子代理协同工作的审计流程
-- 完整的从代码分析到实际环境测试的验证流程
-- 结构化的漏洞发现与报告机制
+**综合评估: 安全 ✅**
+
+1. ✅ Webhook 接口均有签名验证机制
+2. ✅ 在不知道密钥的情况下无法伪造回调
+3. ✅ 认证机制完善，需要有效的 session 和 header
+4. ✅ 订单状态变更需要正确的签名
+
+**无高危漏洞发现**
+
+## 测试脚本
+
+1. [test_timyai_fixed.py](file:///workspace/test_timyai_fixed.py) - 登录和接口测试
+2. [test_webhook_security.py](file:///workspace/test_webhook_security.py) - Webhook 安全测试
+
+## 建议
+
+1. **密钥管理**: 定期更换支付密钥
+2. **日志监控**: 监控异常的 webhook 请求
+3. **算法升级**: 考虑将 MD5 升级为更安全的算法
+4. **测试模式**: 确保生产环境关闭 Creem 测试模式
+
+---
+
+审计完成时间: 2026-05-03
+审计工具: 红队自动化审计系统 v1.0
